@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Script to fix Apache configuration and serve "Hello Holberton" page
+
+# Add ServerName localhost to Apache configuration
+echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+# Start Apache if not already running
+service apache2 status > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    service apache2 start
+    echo "apache2 is running"
+fi
+
+# Navigate to Apache document root
+cd /var/www/html
+
+# Check if index.html exists, if not, create it with content "Hello Holberton"
+if [ ! -f index.html ]; then
+    echo "Hello Holberton" > index.html
+fi
