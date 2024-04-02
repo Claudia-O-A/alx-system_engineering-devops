@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Configures Nginx with custom HTTP response header
+
+# Update package index and install Nginx
+sudo apt-get -y update
+sudo apt-get -y install nginx
+
+# Allow Nginx through firewall
+sudo ufw allow 'Nginx HTTP'
+
+# Create directories and set permissions
+sudo mkdir -p /var/www/html /var/www/error
+sudo chmod -R 755 /var/www
+
+# Create index and 404 pages
+echo 'Hello World!' | sudo tee /var/www/html/index.html
+echo "Ceci n'est pas une page" | sudo tee /var/www/html/404.html
+
+# Define server configuration
+server_config="server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    server_name _;
+    add_header X-Served-By \$hostname;
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+    if (\$request_filename ~ redirect_me){
+        rewrite ^ https://youtube.com permanent;
+    }
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+    }
+}"
+
+# Write configuration to Nginx
+echo "$server_config" | sudo tee /etc/nginx/sites-enabled/default
+
+# Restart Nginx to apply changes
+sudo service nginx restart
